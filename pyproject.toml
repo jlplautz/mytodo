@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "mytodo"
+version = "0.1.0"
+description = "Com esse projeto temos a inteção de estudar a criação de API's com fastAPI."
+authors = ["Jorge Luiz Plautz <jorge.plautz@gmail.com>"]
+license = "GPLv3+"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[tool.pytest.ini_options]
+python_files = [
+    "test*.py",
+    "*tests.py",
+]
+minversion = "6.0"
+addopts = "-ra -q -vv"
+testpaths = [
+    "/tests",
+]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

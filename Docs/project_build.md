@@ -563,4 +563,167 @@ if [ -n "$POSTGRES_DBS" ]; then
 	done
 	echo "Multiple databases created"
 fi
-*************************************************************
+
+# ***************************************************************************
+
+## issue-7 --> Creates Postgres service and first tests
+
+git status   
+On branch issue-7
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   postgres/Dockerfile
+        modified:   postgres/create_databases.sh
+        modified:   pyproject.toml
+        deleted:    tests/__init__py
+        deleted:    todo/__init__py
+        modified:   todo/app.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        Docs
+        tests/__init__.py
+        tests/test_main_api.py
+        todo/__init__.py
+
+
+╰─$ git add todo/         
+╰─$ git add postgres/     
+╰─$ git add tests/   
+╰─$ git add pyproject.toml
+╰─$ git add Docs    
+(mytodo-py3.11) ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹issue-7●› 
+╰─$ git status  
+On branch issue-7
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   Docs
+        modified:   postgres/Dockerfile
+        modified:   postgres/create_databases.sh
+        modified:   pyproject.toml
+        renamed:    tests/__init__py -> tests/__init__.py
+        new file:   tests/test_main_api.py
+        renamed:    todo/__init__py -> todo/__init__.py
+        modified:   todo/app.py
+
+(mytodo-py3.11) ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹issue-7●› 
+╰─$ git commit -m 'feat(issue-7): Creates Postgres service and first tests.'                   
+[issue-7 efb90a1] feat(issue-7): Creates Postgres service and first tests.
+ 8 files changed, 623 insertions(+), 1 deletion(-)
+ create mode 100644 Docs
+ rename tests/{__init__py => __init__.py} (100%)
+ create mode 100644 tests/test_main_api.py
+ rename todo/{__init__py => __init__.py} (100%)
+(mytodo-py3.11) ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹issue-7› 
+╰─$ git push origin issue-7                                                 
+Enumerating objects: 19, done.
+Counting objects: 100% (17/17), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (11/11), done.
+Writing objects: 100% (11/11), 5.66 KiB | 1.13 MiB/s, done.
+Total 11 (delta 2), reused 0 (delta 0)
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+remote: 
+remote: Create a pull request for 'issue-7' on GitHub by visiting:
+remote:      https://github.com/jlplautz/mytodo/pull/new/issue-7
+remote: 
+To github.com:jlplautz/mytodo.git
+ * [new branch]      issue-7 -> issue-7
+
+╰─$ git checkout main                                                       
+Switched to branch 'main'
+
+╰─$ git pull origin main   
+remote: Enumerating objects: 19, done.
+remote: Counting objects: 100% (17/17), done.
+remote: Compressing objects: 100% (9/9), done.
+remote: Total 11 (delta 2), reused 10 (delta 2), pack-reused 0
+Unpacking objects: 100% (11/11), 6.02 KiB | 3.01 MiB/s, done.
+From github.com:jlplautz/mytodo
+ * branch            main       -> FETCH_HEAD
+   1bd4326..5815446  main       -> origin/main
+Updating 1bd4326..5815446
+Fast-forward
+ Docs                              | 566 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ postgres/Dockerfile               |   2 +
+ postgres/create_databases.sh      |  22 +++
+ pyproject.toml                    |   2 +-
+ tests/{__init__py => __init__.py} |   0
+ tests/test_main_api.py            |  19 +++
+ todo/{__init__py => __init__.py}  |   0
+ todo/app.py                       |  13 ++
+ 8 files changed, 623 insertions(+), 1 deletion(-)
+ create mode 100644 Docs
+ rename tests/{__init__py => __init__.py} (100%)
+ create mode 100644 tests/test_main_api.py
+ rename todo/{__init__py => __init__.py} (100%)
+
+
+# ***************************************************************************
+
+## issue-9 --> Create a Dockerfile-dev and docker-compose.yml in the root
+
+Dockerfile.dev
+******************************************************************
+FROM python:3.11.1-slim
+
+ENV PYTHONBUFFERED=1 \
+	PYTHONDONTWRITEBYTCODE=1 \
+	PIP_NO_CACHE_DIR=off \
+	PIP_DEFAULT_TIMEOUT=100 \
+	POETRY_VERSION=1.5.0 \
+	POETRY_HOME="/opt/poetry" \
+	POETRY_VIRTUALENVS_CREATE=false
+	
+ENV	PATH="$PATH:$POETRY_HOME/bin"
+	
+RUN groupadd app && useradd -g app app
+RUN pip install -U pip
+RUN apt update && apt upgrade -y && apt install --no-install-recommends -y curl
+RUN curl -sSL https://install.python-poetry.org | python3 -
+WORKDIR /home/api
+COPY . /home/api
+RUN poetry install 
+RUN chown -R app:app /home/api
+USER app
+EXPOSE 8000
+CMD ["uvicorn", "--reload", "todo.app:app", "--host=0.0.0.0", "--port=8000"]
+******************************************************************
+
+Docker-compose.yml
+
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      TODO_DB__uri: "postgresql://postgres:postgres@db:5432/${TODO_DB:-todo}"
+      TODO_DB__connect_args: "{}"
+    volumes:
+      - .:/home/api
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+  db:
+    build: postgres
+    image: todo_postgres-15-alpine-multi-user
+    volumes:
+      - .postgres/todo_db/data/postgresql:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DBS=todo, todo_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+      ******************************************************************
+
+## executar git status, add, commit, push
+

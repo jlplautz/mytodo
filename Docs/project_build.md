@@ -727,3 +727,92 @@ services:
 
 ## executar git status, add, commit, push
 
+
+# ******************************************pyte********************************
+
+## issue-11 --> Install dev dependencies pytest-cov and taskipy
+
+╰─$ poetry add --group dev pytest-cov taskipy       
+Using version ^4.1.0 for pytest-cov
+Using version ^1.11.0 for taskipy
+
+Updating dependencies
+Resolving dependencies... (0.7s)
+
+Writing lock file
+
+Package operations: 5 installs, 0 updates, 0 removals
+
+  • Installing coverage (7.2.7)
+  • Installing psutil (5.9.5)
+  • Installing tomli (2.0.1)
+  • Installing pytest-cov (4.1.0)
+  • Installing taskipy (1.11.0)
+
+╰─$ poetry  remove --group dev flake8                                                                          1 ↵
+Updating dependencies
+Resolving dependencies... (0.3s)
+
+Writing lock file
+
+Package operations: 0 installs, 0 updates, 4 removals
+
+  • Removing flake8 (6.0.0)
+  • Removing mccabe (0.7.0)
+  • Removing pycodestyle (2.10.0)
+  • Removing pyflakes (3.0.1)
+
+
+╰─$ poetry add --group dev blue isort  
+Using version ^0.9.1 for blue
+Using version ^5.12.0 for isort
+
+Updating dependencies
+Resolving dependencies... (1.1s)
+
+Writing lock file
+
+Package operations: 10 installs, 0 updates, 0 removals
+
+  • Installing mccabe (0.6.1)
+  • Installing mypy-extensions (1.0.0)
+  • Installing pathspec (0.11.1)
+  • Installing platformdirs (3.9.1)
+  • Installing pycodestyle (2.8.0)
+  • Installing pyflakes (2.4.0)
+  • Installing black (22.1.0)
+  • Installing flake8 (4.0.1)
+  • Installing blue (0.9.1)
+  • Installing isort (5.12.0)
+
+### inserir no pyproject.toml
+[tool.taskipy.tasks]
+test = {cmd = "pytest -x", help = "Run test and abort if has one fail."}
+test-cov = {cmd = "pytest --cov=todo", help = "Run test and give us a coverage report."}
+lint = {cmd = "flake8 .", help = "Run lint to check PEP8."}
+clean = {cmd = "find ./ -name '*.pyc' -delete && find ./ -name '__pycache__' -delete && find ./ -name 'Thumbs.db' -delete && find ./ -name '*~' -delete && rm -rf .cache && rm -rf .pytest_cache && rm -rf dist && rm -rf *.egg-info && rm -rf htmlcov && rm -rf .tox/ && rm -rf site", help = "Clear the project off all files that are dispensables."}
+down = {cmd = "docker-compose down", help = "Down the services containers."}
+remove-img = {cmd = "docker image rm todo_project_api:latest todo_postgres-15-alpine-multi-user:latest", help = "Delete containers images to build again."}
+up = {cmd = "docker-compose up -d", help = "Up the services containers."}
+pre_build = "task down && task remove-img"
+build = {cmd = "docker-compose build --no-cache", help = "Build the images' services."}
+post_build = "task up"
+
+
+╰─$ poetry run task --list
+test       Run test and abort if has one fail.
+test-cov   Run test and give us a coverage report.
+lint       Run lint to check by blue and isort.
+clean      Clear the project off all files that are dispensables.
+down       Down the services containers.
+remove-img Delete containers images to build again.
+up         Up the services containers.
+pre_build  task down && task remove-img
+build      Build the images' services.
+post_build task up
+
+
+## executar git status, add, commit, push
+
+
+# ******************************************pyte********************************

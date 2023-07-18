@@ -3,7 +3,7 @@ from fastapi import FastAPI
 app = FastAPI(
     title='Todo List Manager',
     version='0.1.0',
-    description='A simple **todo list** manager API.'
+    description='A simple **todo list** manager API.',
 )
 
 

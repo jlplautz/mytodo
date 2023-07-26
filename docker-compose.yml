@@ -16,6 +16,7 @@ services:
       - db
     stdin_open: true
     tty: true
+  
   db:
     build: postgres
     image: todo_postgres-15-alpine-multi-user

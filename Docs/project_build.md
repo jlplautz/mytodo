@@ -867,14 +867,15 @@ criar arquivo no models
       created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
       updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
  
-  - no __init__.py inserir
+
  
- Para facilitar o import quando necessario
- 
+ ### Para facilitar o import da tabela User quando necessario
+ ### Inserir no __init__.py do direotio models
+
  from sqlmode import SQLModel
  from .user import User
  
-  __ALL__ * ['User', 'SQLModel']
+  __all__ * ['User', 'SQLModel']
   
    
  poetry add dynaconf
@@ -989,3 +990,136 @@ todo/security.py       0      0   100%
 TOTAL                  5      0   100%
 
 =============================== 2 passed, 1 warning in 4.39s ===============================
+
+
+# *****************************************************************************
+
+## comandos no container 
+
+╰─$ docker compose exec api poetry show --tree
+The virtual environment found in /home/api/.venv seems to be broken.
+Recreating virtualenv mytodo in /home/api/.venv                     <- CRIOU O AMBIENTE VIRTUAL  
+blue 0.9.1 Blue -- Some folks like black but I prefer blue.
+├── black 22.1.0
+│   ├── click >=8.0.0 
+│   │   └── colorama * 
+│   ├── mypy-extensions >=0.4.3 
+│   ├── pathspec >=0.9.0 
+│   ├── platformdirs >=2 
+│   └── tomli >=1.1.0 
+└── flake8 >=3.8,<5.0.0
+    ├── mccabe >=0.6.0,<0.7.0 
+    ├── pycodestyle >=2.8.0,<2.9.0 
+    └── pyflakes >=2.4.0,<2.5.0 
+fastapi 0.100.0 FastAPI framework, high performance, easy to learn, fast to code, ready for production
+├── pydantic >=1.7.4,<1.8 || >1.8,<1.8.1 || >1.8.1,<2.0.0 || >2.0.0,<2.0.1 || >2.0.1,<3.0.0
+│   └── typing-extensions >=4.2.0 
+├── starlette >=0.27.0,<0.28.0
+│   └── anyio >=3.4.0,<5 
+│       ├── idna >=2.8 
+│       └── sniffio >=1.1 
+└── typing-extensions >=4.5.0
+httpx 0.24.1 The next generation HTTP client.
+├── certifi *
+├── httpcore >=0.15.0,<0.18.0
+│   ├── anyio >=3.0,<5.0 
+│   │   ├── idna >=2.8 
+│   │   └── sniffio >=1.1 
+│   ├── certifi * 
+│   ├── h11 >=0.13,<0.15 
+│   └── sniffio >=1.0.0,<2.0.0 (circular dependency aborted here)
+├── idna *
+└── sniffio *
+ipdb 0.13.13 IPython-enabled pdb
+├── decorator *
+└── ipython >=7.31.1
+    ├── appnope * 
+    ├── backcall * 
+    ├── colorama * 
+    ├── decorator * 
+    ├── jedi >=0.16 
+    │   └── parso >=0.8.0,<0.9.0 
+    ├── matplotlib-inline * 
+    │   └── traitlets * 
+    ├── pexpect >4.3 
+    │   └── ptyprocess >=0.5 
+    ├── pickleshare * 
+    ├── prompt-toolkit >=3.0.30,<3.0.37 || >3.0.37,<3.1.0 
+    │   └── wcwidth * 
+    ├── pygments >=2.4.0 
+    ├── stack-data * 
+    │   ├── asttokens >=2.1.0 
+    │   │   └── six * 
+    │   ├── executing >=1.2.0 
+    │   └── pure-eval * 
+    └── traitlets >=5 (circular dependency aborted here)
+ipython 8.14.0 IPython: Productive Interactive Computing
+├── appnope *
+├── backcall *
+├── colorama *
+├── decorator *
+├── jedi >=0.16
+│   └── parso >=0.8.0,<0.9.0 
+├── matplotlib-inline *
+│   └── traitlets * 
+├── pexpect >4.3
+│   └── ptyprocess >=0.5 
+├── pickleshare *
+├── prompt-toolkit >=3.0.30,<3.0.37 || >3.0.37,<3.1.0
+│   └── wcwidth * 
+├── pygments >=2.4.0
+├── stack-data *
+│   ├── asttokens >=2.1.0 
+│   │   └── six * 
+│   ├── executing >=1.2.0 
+│   └── pure-eval * 
+└── traitlets >=5
+isort 5.12.0 A Python utility / library to sort Python imports.
+psycopg2-binary 2.9.6 psycopg2 - Python-PostgreSQL Database Adapter
+pytest 7.4.0 pytest: simple powerful testing with Python
+├── colorama *
+├── iniconfig *
+├── packaging *
+└── pluggy >=0.12,<2.0
+pytest-cov 4.1.0 Pytest plugin for measuring coverage.
+├── coverage >=5.2.1
+└── pytest >=4.6
+    ├── colorama * 
+    ├── iniconfig * 
+    ├── packaging * 
+    └── pluggy >=0.12,<2.0 
+pytest-order 1.1.0 pytest plugin to run your tests in a specific order
+└── pytest >=6.2.4
+    ├── colorama * 
+    ├── iniconfig * 
+    ├── packaging * 
+    └── pluggy >=0.12,<2.0 
+sqlmodel 0.0.8 SQLModel, SQL databases in Python, designed for simplicity, compatibility, and robustness.
+├── pydantic >=1.8.2,<2.0.0
+│   └── typing-extensions >=4.2.0 
+├── sqlalchemy >=1.4.17,<=1.4.41
+│   └── greenlet !=0.4.17 
+└── sqlalchemy2-stubs *
+    └── typing-extensions >=3.7.4 
+taskipy 1.11.0 tasks runner for python projects
+├── colorama >=0.4.4,<0.5.0
+├── mslex >=0.3.0,<0.4.0
+├── psutil >=5.7.2,<6.0.0
+└── tomli >=2.0.1,<3.0.0
+uvicorn 0.23.1 The lightning-fast ASGI server.
+├── click >=7.0
+│   └── colorama * 
+└── h11 >=0.8
+
+## para evitar a criação do albiente virtual no container
+╰─$ docker compose exec api pip list | grep pytest 
+pytest            7.4.0
+pytest-cov        4.1.0
+pytest-order      1.1.0
+
+╰─$ docker compose exec api pip list | grep sql   
+sqlalchemy2-stubs 0.0.2a35
+sqlmodel          0.0.8
+
+╰─$ docker compose exec api pip list | grep pyd   
+pydantic          1.10.12

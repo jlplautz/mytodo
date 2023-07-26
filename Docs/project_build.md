@@ -877,22 +877,32 @@ criar arquivo no models
  
   __all__ * ['User', 'SQLModel']
   
+
+# Install lib dynaconf
    
  poetry add dynaconf
+
+ ─$ poetry add dynaconf                 
+Using version ^3.2.0 for dynaconf
+Updating dependencies
+Resolving dependencies... (0.5s)
+Writing lock file
+Package operations: 1 install, 0 updates, 0 removals
+  • Installing dynaconf (3.2.0)
   
- fazer um task build
- 
-  no file default.toml # para fazer a conexão com o banco
+###  no file default.toml setting para fazer a conexão com o banco
  
  [default]
  
  [default.db]
  uri = ''
  connect_args = (check_same_thread=false)
+ # no sqlalchemy é possivel ver o comando SQL na execução de uma query
+ # com echo = False este output é suprmido
  echo = false
  
  
-  no file config.py
+  ### no file config.py
   
   import os
   from dynaconf import Dynaconf
@@ -900,14 +910,22 @@ criar arquivo no models
   HERE = os.path.dirname(os.path.abspath(__file__))
   
   settings = Dynaconf(
-     envvar_prefix = 'todo'
-     preload=[os.path.join(HERE), 'default.toml')
-     settings_files=['settings.toml', '.secrets.toml'],
-     environments=['development', 'production', 'testing'], # development -> default
-     env_switches='todo_env',
-     load_dotenv=False
+  # coloca como padrão o prefix TODO nas variaveis de ambiente da api
+  # ver o exemplo no no docker-compose.yml
+  envvar_prefix = 'todo'
+  # faz um preload do file default.toml
+  preload=[os.path.join(HERE), 'default.toml')
+  # guardar as senhas no secrets.toml que não será feito commit
+  settings_files=['settings.toml', '.secrets.toml'],
+  # definimos os ambiente que temo
+  environments=['development', 'production', 'testing'], # development -> default
+  # variavel usada para fazer o switch de um ambiente virtual para outro
+  env_switches='todo_env',
+  # não ler os arquivos .env
+  load_dotenv=False
  
-  
+### check by printenv
+
  Link -> https://www.youtube.com/watch?v=-qWySnuoaTM&pp=ygUOY29kZXNob3cgZmxhc2s%3D
  
  commit branch 21 alteração no projeto com Dynaconf

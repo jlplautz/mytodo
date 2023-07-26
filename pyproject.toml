@@ -12,6 +12,7 @@ fastapi = "^0.100.0"
 uvicorn = "^0.23.1"
 psycopg2-binary = "^2.9.6"
 sqlmodel = "^0.0.8"
+dynaconf = "^3.2.0"
 
 
 [tool.poetry.group.dev.dependencies]

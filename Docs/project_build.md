@@ -728,7 +728,7 @@ services:
 ## executar git status, add, commit, push
 
 
-# ******************************************pyte********************************
+# **************************************************************************
 
 ## issue-11 --> Install dev dependencies pytest-cov and taskipy
 
@@ -815,4 +815,177 @@ post_build task up
 ## executar git status, add, commit, push
 
 
-# ******************************************pyte********************************
+# *****************************************************************************
+
+ CMDs docker
+  
+  
+  Qdo usamos um diretorio para volume as caracteristica deste diretorio é alterado para root
+  
+  Para resolve a task clean basta mover p diretorio .postgres para a diretorio home echo ~
+  Alterar o file docker-compose.yml para apontar para o novo diretorio na home
+ 
+ 
+
+# *****************************************************************************
+
+data: 19/07/23 Comunidade live 45
+
+Modelar o banco  branch#20
+
+- Migrações com Alambique
+
+ - Tabela de usuários e outra de todo
+ 
+   link erb.dbdesigner.net/designer/schema/
+   
+   1- user para muitas tasks
+   2- uma task para um user  
+   
+- docker compose logs --follow pata verificar os logs
+- docker-compose logs --follow
+- docker logs -ft todo_project_api_1 
+- docker-compose logs -t 
+
+poetry add psycopg2-binary sqlmodel
+
+docker compose exec api pip list | grep psy 
+
+criar arquivo no models
+ - user.py
+ from typing import Optional
+ from sqlmodel import Field, SQLModel
+ from datetime import datetime
+ 
+ class User(SQLModel, table=True):
+      """ Represents the user Model"""
+      id: Optional[int] = Field(default=Nome, primary_key=True)
+      name: str = Field(nullable=True, )
+      email: str = Field(nullable=True, unique=True)
+      password: str = Field(nullable=False, )
+      active: Optional[bool] = Field(default=True)
+      created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+      updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+ 
+  - no __init__.py inserir
+ 
+ Para facilitar o import quando necessario
+ 
+ from sqlmode import SQLModel
+ from .user import User
+ 
+  __ALL__ * ['User', 'SQLModel']
+  
+   
+ poetry add dynaconf
+  
+ fazer um task build
+ 
+  no file default.toml # para fazer a conexão com o banco
+ 
+ [default]
+ 
+ [default.db]
+ uri = ''
+ connect_args = (check_same_thread=false)
+ echo = false
+ 
+ 
+  no file config.py
+  
+  import os
+  from dynaconf import Dynaconf
+  
+  HERE = os.path.dirname(os.path.abspath(__file__))
+  
+  settings = Dynaconf(
+     envvar_prefix = 'todo'
+     preload=[os.path.join(HERE), 'default.toml')
+     settings_files=['settings.toml', '.secrets.toml'],
+     environments=['development', 'production', 'testing'], # development -> default
+     env_switches='todo_env',
+     load_dotenv=False
+ 
+  
+ Link -> https://www.youtube.com/watch?v=-qWySnuoaTM&pp=ygUOY29kZXNob3cgZmxhc2s%3D
+ 
+ commit branch 21 alteração no projeto com Dynaconf
+
+# *****************************************************************************
+
+## Alguns comandos docker
+
+docker compose up
+docker compose prone
+docker container ls
+docker compouse build --no-cache
+docker compouse --rm -ti <name> /bin/bash
+
+─$ docker compose up -d                                                              125 ↵
+[+] Running 3/3
+ ✔ Network mytodo_default  Created                                                     0.1s 
+ ✔ Container mytodo-db-1   Started                                                     0.6s 
+ ✔ Container mytodo-api-1  Started                                                     1.0s 
+
+╰─$ docker container ls   
+CONTAINER ID   IMAGE                                COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+77b32afbaa2f   mytodo-api                           "uvicorn --reload to…"   15 seconds ago   Up 13 seconds   0.0.0.0:8000->8000/tcp, :::8000->8000/tcp   mytodo-api-1
+8d19c5d29c5d   todo_postgres-15-alpine-multi-user   "docker-entrypoint.s…"   15 seconds ago   Up 14 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   mytodo-db-1
+
+╰─$ docker exec -it mytodo-api-1 /bin/bash      
+app@77b32afbaa2f:/home/api$ ls
+ Dockerfile.dev   LICENSE     docker-compose.yml   postgres        'sk '    todo
+ Docs             README.md   poetry.lock          pyproject.toml   tests
+app@77b32afbaa2f:/home/api$ pytest
+=================================== test session starts ====================================
+platform linux -- Python 3.11.1, pytest-7.4.0, pluggy-1.2.0 -- /usr/local/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /home/api
+configfile: pyproject.toml
+plugins: order-1.1.0, anyio-3.7.1, cov-4.1.0
+collected 2 items                                                                          
+
+tests/test_main_api.py::test_main_api_works_ok PASSED                                [ 50%]
+tests/test_main_api.py::test_main_api_has_docs PASSED                                [100%]
+
+===================================== warnings summary =====================================
+../../usr/local/lib/python3.11/site-packages/_pytest/config/__init__.py:1433
+  /usr/local/lib/python3.11/site-packages/_pytest/config/__init__.py:1433: PytestConfigWarning: No files were found in testpaths; consider removing or adjusting your testpaths configuration. Searching recursively from the current directory instead.
+    self.args, self.args_source = self._decide_args(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== 2 passed, 1 warning in 2.31s ===============================
+app@77b32afbaa2f:/home/api$ pytest --cov=todo
+=================================== test session starts ====================================
+platform linux -- Python 3.11.1, pytest-7.4.0, pluggy-1.2.0 -- /usr/local/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /home/api
+configfile: pyproject.toml
+plugins: order-1.1.0, anyio-3.7.1, cov-4.1.0
+collected 2 items                                                                          
+
+tests/test_main_api.py::test_main_api_works_ok PASSED                                [ 50%]
+tests/test_main_api.py::test_main_api_has_docs PASSED                                [100%]
+
+===================================== warnings summary =====================================
+../../usr/local/lib/python3.11/site-packages/_pytest/config/__init__.py:1433
+  /usr/local/lib/python3.11/site-packages/_pytest/config/__init__.py:1433: PytestConfigWarning: No files were found in testpaths; consider removing or adjusting your testpaths configuration. Searching recursively from the current directory instead.
+    self.args, self.args_source = self._decide_args(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform linux, python 3.11.1-final-0 -----------
+Name               Stmts   Miss  Cover
+--------------------------------------
+todo/__init__.py       0      0   100%
+todo/app.py            5      0   100%
+todo/auth.py           0      0   100%
+todo/cli.py            0      0   100%
+todo/config.py         0      0   100%
+todo/db.py             0      0   100%
+todo/default.py        0      0   100%
+todo/security.py       0      0   100%
+--------------------------------------
+TOTAL                  5      0   100%
+
+=============================== 2 passed, 1 warning in 4.39s ===============================

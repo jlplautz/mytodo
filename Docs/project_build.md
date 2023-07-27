@@ -831,14 +831,29 @@ post_build task up
 
 data: 19/07/23 Comunidade live 45
 
-Modelar o banco  branch#20
+Ajustar as configuraçoes de projeto
+
+O que foi feito ate o momento:
+ - foi instalado dependencias de desenvolvimento
+ - foi instalado dependencias de produção
+ - foi containerizado os serviços
+ - foi orquestrado com docker compose os serviços
+   - aplicação
+   - banco
+   
+ Modelar o banco USERs
+ - modelagem com SQLMODEL
+ 
+ Ajustar as configuração de projeto usando o dynaconf
+ Criar a conexão com o banco de dados
+ Configurar para fazer as migraçoes com alambic
+ 
+ Usando erd.dbdesignser.net 
+    link erb.dbdesigner.net/designer/schema/
 
 - Migrações com Alambique
 
  - Tabela de usuários e outra de todo
- 
-   link erb.dbdesigner.net/designer/schema/
-   
    1- user para muitas tasks
    2- uma task para um user  
    
@@ -877,32 +892,22 @@ criar arquivo no models
  
   __all__ * ['User', 'SQLModel']
   
-
-# Install lib dynaconf
    
  poetry add dynaconf
-
- ─$ poetry add dynaconf                 
-Using version ^3.2.0 for dynaconf
-Updating dependencies
-Resolving dependencies... (0.5s)
-Writing lock file
-Package operations: 1 install, 0 updates, 0 removals
-  • Installing dynaconf (3.2.0)
   
-###  no file default.toml setting para fazer a conexão com o banco
+ fazer um task build
+ 
+  no file default.toml # para fazer a conexão com o banco
  
  [default]
  
  [default.db]
  uri = ''
  connect_args = (check_same_thread=false)
- # no sqlalchemy é possivel ver o comando SQL na execução de uma query
- # com echo = False este output é suprmido
  echo = false
  
  
-  ### no file config.py
+  no file config.py
   
   import os
   from dynaconf import Dynaconf
@@ -910,22 +915,14 @@ Package operations: 1 install, 0 updates, 0 removals
   HERE = os.path.dirname(os.path.abspath(__file__))
   
   settings = Dynaconf(
-  # coloca como padrão o prefix TODO nas variaveis de ambiente da api
-  # ver o exemplo no no docker-compose.yml
-  envvar_prefix = 'todo'
-  # faz um preload do file default.toml
-  preload=[os.path.join(HERE), 'default.toml')
-  # guardar as senhas no secrets.toml que não será feito commit
-  settings_files=['settings.toml', '.secrets.toml'],
-  # definimos os ambiente que temo
-  environments=['development', 'production', 'testing'], # development -> default
-  # variavel usada para fazer o switch de um ambiente virtual para outro
-  env_switches='todo_env',
-  # não ler os arquivos .env
-  load_dotenv=False
+     envvar_prefix = 'todo'
+     preload=[os.path.join(HERE), 'default.toml')
+     settings_files=['settings.toml', '.secrets.toml'],
+     environments=['development', 'production', 'testing'], # development -> default
+     env_switches='todo_env',
+     load_dotenv=False
  
-### check by printenv
-
+  
  Link -> https://www.youtube.com/watch?v=-qWySnuoaTM&pp=ygUOY29kZXNob3cgZmxhc2s%3D
  
  commit branch 21 alteração no projeto com Dynaconf
@@ -1129,7 +1126,7 @@ uvicorn 0.23.1 The lightning-fast ASGI server.
 │   └── colorama * 
 └── h11 >=0.8
 
-## para evitar a criação do albiente virtual no container
+## para evitar a criação do ambiente virtual no container
 ╰─$ docker compose exec api pip list | grep pytest 
 pytest            7.4.0
 pytest-cov        4.1.0
@@ -1141,3 +1138,94 @@ sqlmodel          0.0.8
 
 ╰─$ docker compose exec api pip list | grep pyd   
 pydantic          1.10.12
+
+ 
+ - docker compose logs -t --follow db
+ - docker compose logs -t --follow api
+ 
+ 
+ ## ***************************************************************************
+ 
+ Comunidade  26/07/23
+ 
+ No file db.py
+ 
+ """Database connection"""
+ 
+ from sqlmodel import create_engine
+ from todo.config import settings
+ 
+ engine = create_engine(
+    settings.db.uri,
+    echo=settings.db.echo,
+    connect_ag=settings.db.connect_args
+)
+ 
+create commit criada a conexao com o banco de dados
+
+
+ ## ***************************************************************************
+ 
+ Fazer as migraçoes
+ 
+ poetry add alembic
+ 
+ # depois de instalado lib alembic será necessario fazer task build
+   As primeiras migraçoes precisam serem no container
+ 
+ 
+# :-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:
+ ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹main●› 
+╰─$ command -v python
+/home/plautz/.pyenv/shims/python
+╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹main●› 
+╰─$ poetry shell
+The virtual environment found in /home/plautz/Proj_2023/mytodo/.venv seems to be broken.
+Recreating virtualenv mytodo in /home/plautz/Proj_2023/mytodo/.venv
+Spawning shell within /home/plautz/Proj_2023/mytodo/.venv
+╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹main●› 
+╰─$ emulate bash -c '. /home/plautz/Proj_2023/mytodo/.venv/bin/activate'
+(mytodo-py3.11) ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹main●› 
+╰─$ command -v python
+/home/plautz/Proj_2023/mytodo/.venv/bin/python
+ 
+ tldr ls tem que instalar no bash
+ 
+ # :-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:
+ 
+ poetry run alembic
+ 
+ poetry run alembic init migrations
+ 
+## Cria o diretorio migrations
+## no arquivo env.py dentro do diretorio migrations
+  
+ from todo import models # (devido alteração feito lá no __init__.py)
+ from todo.db import engine
+ from todo.config import settings
+ 
+ target_metadata =  models.SQLModel.metadata
+ 
+ url = setting.db.uri
+ 
+ connectable = engine
+ 
+ no flake8 excluir 
+ 
+ 
+ no diretorio migrations 
+ no file script.py.mako
+ 
+ import sqlmodel
+ 
+ 
+ 
+ ###Fazer as migraçoes no container"""
+ alambic revision --autogenerate -m 'initial'
+ 
+ ### Aplicar a migração apos é possivel ver a tabela no Banco
+ alambic upgrade head
+ 
+ 
+ 
+ 

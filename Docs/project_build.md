@@ -1166,7 +1166,7 @@ create commit criada a conexao com o banco de dados
 
  ## ***************************************************************************
  
- Fazer as migraçoes
+ Fazer as migraçoescommand
  
  poetry add alembic
  
@@ -1178,6 +1178,7 @@ create commit criada a conexao com o banco de dados
  ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹main●› 
 ╰─$ command -v python
 /home/plautz/.pyenv/shims/python
+
 ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹main●› 
 ╰─$ poetry shell
 The virtual environment found in /home/plautz/Proj_2023/mytodo/.venv seems to be broken.
@@ -1185,6 +1186,7 @@ Recreating virtualenv mytodo in /home/plautz/Proj_2023/mytodo/.venv
 Spawning shell within /home/plautz/Proj_2023/mytodo/.venv
 ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹main●› 
 ╰─$ emulate bash -c '. /home/plautz/Proj_2023/mytodo/.venv/bin/activate'
+
 (mytodo-py3.11) ╭─plautz@ProBook-6470b ~/Proj_2023/mytodo ‹main●› 
 ╰─$ command -v python
 /home/plautz/Proj_2023/mytodo/.venv/bin/python
@@ -1195,37 +1197,141 @@ Spawning shell within /home/plautz/Proj_2023/mytodo/.venv
  
  poetry run alembic
  
- poetry run alembic init migrations
+
+
+ # :-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:
+╰─$ ipython
+Python 3.11.0 (main, Dec  8 2022, 08:41:16) [GCC 9.4.0]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 8.14.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: from todo.models import User
+
+In [2]: user  = User(name='Plautz', email='plautz@email.com')
+
+In [3]: user.name
+Out[3]: 'Plautz'
+
+In [4]: user.email
+Out[4]: 'plautz@email.com'
+
+ # :-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:
  
+
 ## Cria o diretorio migrations
+poetry run alembic init migrations
+
+app@2d8596c45856:/home/api$ poetry run alembic init migrations
+The virtual environment found in /home/api/.venv seems to be broken.
+Recreating virtualenv mytodo in /home/api/.venv
+  Creating directory '/home/api/migrations' ...  done
+  Creating directory '/home/api/migrations/versions' ...  done
+  Generating /home/api/migrations/script.py.mako ...  done
+  Generating /home/api/alembic.ini ...  done
+  Generating /home/api/migrations/README ...  done
+  Generating /home/api/migrations/env.py ...  done
+  Please edit configuration/connection/logging settings in '/home/api/alembic.ini' before
+  proceeding.
+
+
+
 ## no arquivo env.py dentro do diretorio migrations
   
- from todo import models # (devido alteração feito lá no __init__.py)
+ from todo import models     
  from todo.db import engine
  from todo.config import settings
- 
+ # importar SQLModel metadata
  target_metadata =  models.SQLModel.metadata
  
- url = setting.db.uri
+
+## na função run_magrations_offline -> alterar
+url = setting.db.uri
+
+## na função run_magration_online -> alterar
+connectable = engine
+
+## No file .flake8 -> inserir
+ exclude 
+    migrations/
  
- connectable = engine
+## no file script.py.mako -> inserir depois da linha import sqlalchemy as sa
+import sqlmodel
+
  
- no flake8 excluir 
+### Fazer as migraçoes no container"""
+alembic revision --autogenerate -m 'initial'
+
+### comando dynaconf list no container da aplicação
+app@2d8596c45856:/home/api$ dynaconf list
+/usr/local/lib/python3.11/site-packages/dynaconf/cli.py:104: UserWarning: Starting on 3.x the param --instance/-i is now required. try passing it `dynaconf -i path.to.settings <cmd>` Example `dynaconf -i config.settings list` 
+  warnings.warn(
+Working in development environment 
+LOAD_DOTENV<bool> True
+DEFAULT_SETTINGS_PATHS<list> ['settings.py',
+ 'settings.toml',
+ 'settings.tml',
+ 'settings.yaml',
+ 'settings.yml',
+ 'settings.ini',
+ 'settings.conf',
+ 'settings.properties',
+ 'settings.json',
+ '.secrets.py',
+ '.secrets.toml',
+ '.secrets.tml',
+ '.secrets.yaml',
+ '.secrets.yml',
+ '.secrets.ini',
+ '.secrets.conf',
+ '.secrets.properties',
+ '.secrets.json']
+app@2d8596c45856:/home/api$ 
+
+
+### Aplicar a migração apos é possivel ver a tabela no Banco
+alembic upgrade head
  
- 
- no diretorio migrations 
- no file script.py.mako
- 
- import sqlmodel
- 
- 
- 
- ###Fazer as migraçoes no container"""
- alambic revision --autogenerate -m 'initial'
- 
- ### Aplicar a migração apos é possivel ver a tabela no Banco
- alambic upgrade head
- 
- 
- 
- 
+app@2d8596c45856:/home/api$ alembic upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 67faedd1a399, initial
+
+
+### No container os comandos para criar user.
+
+app@2d8596c45856:/home/api$ ipython
+/usr/local/lib/python3.11/site-packages/IPython/paths.py:69: UserWarning: IPython parent '/home/app' is not a writable location, using a temp directory.
+  warn("IPython parent '{0}' is not a writable location,"
+Python 3.11.1 (main, Feb  4 2023, 11:23:15) [GCC 10.2.1 20210110]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 8.14.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: from todo.db import engine
+
+In [2]: from todo.models import User
+
+In [3]: user = User(name='Plautz', email='jorge.plautz@gmail.com')
+
+In [4]: user.save()
+
+In [5]: user.name
+Out[5]: 'Plautz'
+
+In [6]: user.email
+Out[6]: 'jorge.plautz@gmail.com'
+
+
+
+Link
+https://ahmed-nafies.medium.com/fastapi-with-sqlalchemy-postgresql-and-alembic-and-of-course-docker-f2b7411ee396
+
+SQLAlchemy - ORM
+SQLMODEL   - ORM
+
+Dynaconf - arquivo para ver variaveis de ambiente ambiente / 
+         - ler password  
+         - decouple
+
+ORM - sql puro  
+
+alembic + sq

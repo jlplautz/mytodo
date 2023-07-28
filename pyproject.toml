@@ -13,6 +13,7 @@ uvicorn = "^0.23.1"
 psycopg2-binary = "^2.9.6"
 sqlmodel = "^0.0.8"
 dynaconf = "^3.2.0"
+alembic = "^1.11.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -36,6 +37,12 @@ addopts = "-ra -q -vv"
 testpaths = [
     "/tests",
 ]
+
+
+[tool.isort]
+profile = "black"  # <-- para alinhar os parametros do import 
+line_length = 79
+
 
 [tool.taskipy.tasks]
 test = {cmd = "pytest -x", help = "Run test and abort if has one fail."}

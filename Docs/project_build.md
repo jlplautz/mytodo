@@ -1348,11 +1348,13 @@ alembic + sq
 
 
 ### Alterar no pyproject.toml incluir apos o readme
-packages = [{include = "todo"}]   # incluir pasta to projeto
+# incluir pasta to projeto para possibilitar futuramente a exportação do projeto
+packages = [{include = "todo"}]   
 
 ### Alterar no pyproject.toml incluir apos group.dev
 [tool.poetry.scripts]
-todo = "todo.cli:main"   # para poder chamar o função cli
+# para poder chamar o função cli
+todo = "todo.cli:main" 
 - precisa fazer buid depois da alteração do tool.poetry.script
 
 ### no file cli.py inserir
@@ -1364,7 +1366,19 @@ def main():
 # :-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:
 
 ### no contanier da app executar para ver o erro do echo
+alembic --help
+
+app@5e2fd8ba1e2a:/home/api$ alembic history
+67faedd1a399 -> 99b06a755b1a (head), teste
+<base> -> 67faedd1a399, initial
+
+# verify the error
 alembic revision --autogenerate -m 'teste'
+
+  File "/usr/local/lib/python3.11/site-packages/dynaconf/vendor/box/box.py", line 176, in __getattr__
+    raise BoxKeyError(str(E)) from _A
+dynaconf.vendor.box.exceptions.BoxKeyError: "'DynaBox' object has no attribute 'echo'"
+
 
 ### Corrigir no file config.py
 preload=[os.path.join(HERE), 'default.toml'],  # corrigir como a linha baixo
@@ -1375,6 +1389,11 @@ echo=settings.db.echo,
 
 ### para ver as variaveis env
 printenv | grep todo
+
+╰─$ printenv | grep todo
+OLDPWD=/home/plautz/Proj_2023/mytodo
+PWD=/home/plautz/Proj_2023/mytodo
+
 
 ### commit da configuraçã dynaconf
 

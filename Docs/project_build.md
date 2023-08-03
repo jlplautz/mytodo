@@ -1335,3 +1335,189 @@ Dynaconf - arquivo para ver variaveis de ambiente ambiente /
 ORM - sql puro  
 
 alembic + sq
+
+
+ ## ***************************************************************************
+ 
+ Comunidade  02/08/23
+
+ Quando usamos email para authenticar podemos deixar exposto o email dos users.
+ procurar não mostrar o email no list
+
+ SQLMODEL é uma abstração do sqlalchemy
+
+
+### Alterar no pyproject.toml incluir apos o readme
+packages = [{include = "todo"}]   # incluir pasta to projeto
+
+### Alterar no pyproject.toml incluir apos group.dev
+[tool.poetry.scripts]
+todo = "todo.cli:main"   # para poder chamar o função cli
+- precisa fazer buid depois da alteração do tool.poetry.script
+
+### no file cli.py inserir
+def main():
+    print('Hello world')
+
+### commit das alterações do pyproject.toml
+
+# :-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:
+
+### no contanier da app executar para ver o erro do echo
+alembic revision --autogenerate -m 'teste'
+
+### Corrigir no file config.py
+preload=[os.path.join(HERE), 'default.toml'],  # corrigir como a linha baixo
+preload=[os.path.join(HERE, 'default.toml')],
+
+### Corrigir no db.py
+echo=settings.db.echo,
+
+### para ver as variaveis env
+printenv | grep todo
+
+### commit da configuraçã dynaconf
+
+# :-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:
+
+### alterar models -> user.py
+
+username: str = Field(nullable=False, unique=True)
+updated_at: Field(.... copiar do River)
+
+### no contanier da app executar para ver o erro do echo
+alembic revision --autogenerate -m 'Criando user_name'
+
+alembic upgrade heard
+
+### commit da alteração do models user.py
+
+# :-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:
+
+### Iniciar a criação do CLI
+
+- usaremos duas feramentas:
+  - poetry add typer rich 
+
+  fazer build
+
+
+### no container da app dar os comandos 
+chamar ipython
+ - from todo.models import User
+ - from todo.db import engine
+ - from sqlmodel import Session, select
+ - query = select(User)
+ - print(query)
+- with Session(engine) as session
+    users = Session.exec(query).all()
+    print(users)
+
+### no arquivo cli.py
+
+from typer omport Typer
+
+from sqlmode import Session, select
+from todo.config import settings
+from todo.db import engine
+from todo.models import User
+
+main = Typer(name='Todo CLI', add_completion=False)
+
+@main.command()
+def shell():
+    """Opens interactive shell"""
+    -vars = {
+      'settings': settings,
+      'engine': engine,
+      'select': select,
+      'session': Session(engine),
+      'User': User,
+    }
+
+    typer:echo(f'Auto imports: (list(_vars.keys))')
+    try:
+      from _ipython import  start_ipython
+
+      start_ipython(
+        args=['--ipython-dir=/tmp', '--no-banner'], user_ns=_vars
+      )
+    except ImportError:
+      import code
+
+      code.InteractiveConsole(_vars).interact()
+
+@main.command()
+def hello():
+    """Print Hello World"""
+    print("Hello World")
+
+
+
+### no container da app
+
+docker exec -ti todo_project_api_1 /bin/bash
+docker exec -ti todo_project_api_1 todo shell
+
+todo shell
+todo.models.user User
+query = select(user)
+print(query)
+
+session.exec(query)
+users = session.exec(query).all()
+users -> volta vazio
+
+user - User(name='Sergio', )
+   
+# .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
+
+import Typer
+
+from sqlmode import Session, select
+from todo.config import settings
+from todo.db import engine
+from todo.models import User
+
+main = Typer(name='Todo CLI', add_completion=False)
+
+@main.command()
+def shell():
+    """Opens interactive shell"""
+    -vars = {
+      'settings': settings,
+      'engine': engine,
+      'select': select,
+      'session': Session(engine),
+      'User': User,
+    }
+
+    typer:echo(f'Auto imports: (list(_vars.keys))')
+    try:
+      from _ipython import  start_ipython
+
+      start_ipython(
+        args=['--ipython-dir=/tmp', '--no-banner'], user_ns=_vars
+      )
+    except ImportError:
+      import code
+
+      code.InteractiveConsole(_vars).interact()
+
+@main.command()
+def user_list():
+    """Lists all users"""
+    table = Table(title='Todo Users List')
+    fields = ['name', 'user_name', 'active', 'created_at']
+    for header in fields:
+      table.add_column(header, style='magenta')
+
+    with Session(engine) as session:
+      users = session.exec(select(Users))
+
+      for user in users:
+        table.add_row(*[getattr(user, field) for field in fields])
+
+  Console.print(table)
+
+### commit da criação do CLI

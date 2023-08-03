@@ -1407,7 +1407,21 @@ updated_at: Field(.... copiar do River)
 ### no contanier da app executar para ver o erro do echo
 alembic revision --autogenerate -m 'Criando user_name'
 
-alembic upgrade heard
+app@55a933f1b842:/home/api$ alembic revision --autogenerate -m 'Criando user_name'
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.ddl.postgresql] Detected sequence named 'user_id_seq' as owned by integer column 'user(id)', assuming SERIAL and omitting
+INFO  [alembic.autogenerate.compare] Detected added column 'user.user_name'
+INFO  [alembic.autogenerate.compare] Detected NOT NULL on column 'user.updated_at'
+INFO  [alembic.autogenerate.compare] Detected added unique constraint 'None' on '['user_name']'
+  Generating /home/api/migrations/versions/9a25f7c6d946_criando_user_name.py ...  done
+
+alembic upgrade head
+
+app@55a933f1b842:/home/api$ alembic upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 67faedd1a399 -> 9a25f7c6d946, Criando user_name
 
 ### commit da alteração do models user.py
 

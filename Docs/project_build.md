@@ -1437,18 +1437,29 @@ INFO  [alembic.runtime.migration] Running upgrade 67faedd1a399 -> 9a25f7c6d946, 
 
 ### no container da app dar os comandos 
 chamar ipython
- - from todo.models import User
- - from todo.db import engine
- - from sqlmodel import Session, select
- - query = select(User)
- - print(query)
-- with Session(engine) as session
-    users = Session.exec(query).all()
-    print(users)
+ In [1]: from todo.models import User
+ In [2]: from todo.db import engine
+ In [3]: from sqlmodel import Session, select
+ In [4]: query = select(User)
+ In [5]: print(query)
+SELECT "user".id, "user".name, "user".email, "user".password, "user".user_name, "user".active, "user".created_at, "user".updated_at 
+FROM "user"
+
+In [8]: with Session(engine) as session:
+   ...:     users = session.exec(query)
+   ...:     print(users)
+   ...: 
+<sqlalchemy.engine.result.ScalarResult object at 0x7f8924154310>
+
+In [6]: with Session(engine) as session:
+   ...:     users = session.exec(query).all()
+   ...:     print(users)
+   ...: 
+[]
 
 ### no arquivo cli.py
 
-from typer omport Typer
+from typer import Typer
 
 from sqlmode import Session, select
 from todo.config import settings
@@ -1487,6 +1498,61 @@ def hello():
 
 
 
+
+app@d127c9b764a4:/home/api$ todo --help                                                                                                                               
+ Usage: todo [OPTIONS]                                                                                                                                                                                                                              
+ Opens interactive hell                                                                                                                
+                                                                                                                                        
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                                                          │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+app@d127c9b764a4:/home/api$ todo --help
+ Usage: todo [OPTIONS] COMMAND [ARGS]...                                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                                                          │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ hello                       Print Hello World                                                                                        │
+│ shell                       Opens interactive shell                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+app@d127c9b764a4:/home/api$ todo hello
+Hello world
+
+app@d127c9b764a4:/home/api$ todo shell
+Auto imports: ['settings', 'engine', 'select', 'session', 'User']
+
+In [1]: User
+Out[1]: todo.models.user.User
+In [2]: query = select(User)
+In [3]: print(query)
+SELECT "user".id, "user".name, "user".email, "user".password, "user".user_name, "user".active, "user".created_at, "user".updated_at 
+FROM "user"
+In [4]: session.exec(query)
+Out[4]: <sqlalchemy.engine.result.ScalarResult at 0x7ff95282acd0>
+
+In [5]: users = session.exec(query).all()
+In [6]: users
+Out[6]: []
+
+### como despacotar uma lista
+In [1]: lista = [1,2,3,4,5]
+In [2]: primeiro, *meio, ultimo = lista
+In [3]: primeiro
+Out[3]: 1
+In [4]: meio
+Out[4]: [2, 3, 4]
+In [5]: ultimo
+Out[5]: 5
+
+
+### Para entrar no serviço
+❯ docker compose exec -ti api /bin/bash
+app@e3fc8d3e808b:/home/api$ ^C
+app@e3fc8d3e808b:/home/api$ todo shell
+Auto imports: ['settings', 'engine', 'select', 'session', 'User']
+
+
 ### no container da app
 
 docker exec -ti todo_project_api_1 /bin/bash
@@ -1501,7 +1567,7 @@ session.exec(query)
 users = session.exec(query).all()
 users -> volta vazio
 
-user - User(name='Sergio', )
+user = User(name='Sergio', )
    
 # .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
 
@@ -1553,4 +1619,141 @@ def user_list():
 
   Console.print(table)
 
+
 ### commit da criação do CLI
+
+
+ ## ***************************************************************************
+ 
+ Comunidade  09/08/23
+
+ ### Rever o conteudo do projeto
+ Lei Geral de Proteção de Dados Pessoais (LGPD)
+ Lei LGPD --> https://www.gov.br › mds › pt-br › acesso-a-informacao › lgpd
+
+
+### inserir um lib para manipular o password e criar um função para normalizar o password
+poetry add python-slugify
+
+no cli.py inserir
+ from slugify import slugify
+
+ -vars = {
+ ...
+ slugify: slugify,
+ ...
+ }
+
+ ### Dentro do file user.py fora da classe inserir
+
+def gen_user_name(name: str) -> str:
+    """Generate a slug """
+
+### Faser o commit Instalado a lib python-slugify e criado a função
+
+
+### inserir um lib para implementat o hash o password e criar um função para normalizar o password
+poetry add passlib[bcrypt]
+
+### altera o file default.toml -> inserir
+
+[default.security]
+# Set secret key_in .secrets.toml
+# SECRET_KEY = ""
+ALGORITHM = "HS256"
+ACCES_TOKEN_EXPIRE_MINUTES = 20
+REFRESH_TOKEN_EXPIRE_MINUTES = 600
+
+### Criar arquivo na raiz .secrets.loml -> não deve subir para o githib
+
+[development]
+dynaconf_merge = true
+
+[development.security]
+SECRET_KEY = "128782340856cdef18becc37febf9e80176c714c9166b5632bbcfd6141a96a4e"
+
+
+### Para gerar a secret_key com command python
+
+python -c "print(__import__('secrets').token_hex(32))"
+128782340856cdef18becc37febf9e80176c714c9166b5632bbcfd6141a96a4e
+
+❯ openssl rand -hex 32                     
+d7b57f4f10ce3d475363dc8698fc3e81eba20e2cee77d323fe1963183dde4664
+
+
+### inserir no config
+
+Validator
+
+setting.validators.register:
+    Validator('security.SECRET_KEY', must_exit=True, is_type_of=str)  -> faltou completar
+
+
+  export TODO_SECRET_KEY=<security-key>
+  printenv | grep TODO
+
+  app@1e98e483d548:/home/api$ printenv | grep TODO
+TODO_DB__connect_args={}
+TODO_DB__uri=postgresql://postgres:postgres@db:5432/todo
+
+
+### Serviço para guarda password
+    lastpass ou onepass
+
+
+### Segurança no file security.py inserir
+"""Security utilities"""
+
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=['bycrpt'].deprecated='auto')
+
+def verify.password(plain_password: str, hashed_password: str) -> bool:
+    """Verifies a hash against a plain_password."""
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    """Generae a hash from plain text
+
+    Args:
+        password(str): Plain Text Password
+    
+    Returns:
+       str: Hased Passwod
+    """
+    return pwd_context.hash(password)
+
+
+class HashedPassword(str):
+      """ Takes a plain text password and hashes it.
+
+      We can use it a field on our SQLModel
+      class User(SQLModel, table=True):
+            user_name= str
+            password = HashedPassword
+      """
+
+      @classmethod
+      def __get_validators_(cls):
+          yield cls.validate
+
+      @classmethod
+      def validate(cls, y):
+          """ Accepts ...."""
+          if not isinstance(v, str)
+              raise TypeError('string required')
+          
+          hashed_password = get_password_hash(v)
+          return cls(hashed_password)
+
+
+### No file user.py
+
+from Todo.security import HashedPassword
+password = HashedPassword
+
+
+No container 
+
+user = User(name='plautz', email='plautz@email.com', password='1234',)
+

@@ -1,6 +1,7 @@
 import typer
 from rich.console import Console
 from rich.table import Table
+from slugify import slugify
 from sqlmodel import Session, select
 
 from todo.config import settings
@@ -18,6 +19,7 @@ def shell():
         'engine': engine,
         'select': select,
         'session': Session(engine),
+        'slugify': slugify,
         'User': User,
     }
 

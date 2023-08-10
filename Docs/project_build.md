@@ -1647,7 +1647,12 @@ no cli.py inserir
  ### Dentro do file user.py fora da classe inserir
 
 def gen_user_name(name: str) -> str:
-    """Generate a slug """
+    """Generate a slug user-name from a name"""
+    return slugify(name)
+
+In [1]: text = 'Jorge Palutz'
+In [2]: print(slugify(text))
+jorge-palutz
 
 ### Faser o commit Instalado a lib python-slugify e criado a função
 

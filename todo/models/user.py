@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
+from slugify import slugify
 from sqlmodel import Field, SQLModel
 
 
@@ -19,3 +20,7 @@ class User(SQLModel, table=True):
         nullable=False,
         sa_column_kwargs={'onupdate': datetime.utcnow},
     )
+
+    def gen_user_name(name: str) -> str:
+        """Generate a slug user-name from a name"""
+        return slugify(name)

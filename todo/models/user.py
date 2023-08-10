@@ -17,5 +17,5 @@ class User(SQLModel, table=True):
     updated_at: datetime = Field(
         default_factory=datetime.utcnow,
         nullable=False,
-        sa_column_kwargs={'onupdate': datetime.utcnow}
+        sa_column_kwargs={'onupdate': datetime.utcnow},
     )

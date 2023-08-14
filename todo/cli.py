@@ -1,25 +1,26 @@
 import typer
 from rich.console import Console
 from rich.table import Table
-from slugify import slugify
 from sqlmodel import Session, select
 
 from todo.config import settings
 from todo.db import engine
-from todo.models import User
+from todo.models import User, gen_user_name
 
 main = typer.Typer(name='Todo CLI', add_completion=False)
 
 
 @main.command()
 def shell():
-    """Opens interactive shell"""
+    """Opens interactive shell
+    to run this shell into the container -> todo shell
+    """
     _vars = {
         'settings': settings,
         'engine': engine,
         'select': select,
         'session': Session(engine),
-        'slugify': slugify,
+        'gen_user_name': gen_user_name,
         'User': User,
     }
 
@@ -51,7 +52,7 @@ def user_list():
         table.add_column(header, style='cyan')
 
     with Session(engine) as session:
-        users = session.exec(select(User))
+        users = session.exec(select(User).where(User.active))
         for user in users:
             table.add_row(
                 *[getattr(user, field) for field in fields]

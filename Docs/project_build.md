@@ -1631,6 +1631,7 @@ def user_list():
  Lei Geral de Proteção de Dados Pessoais (LGPD)
  Lei LGPD --> https://www.gov.br › mds › pt-br › acesso-a-informacao › lgpd
 
+ Cuidar com o password
 
 ### inserir um lib para manipular o password e criar um função para normalizar o password
 poetry add python-slugify
@@ -1644,23 +1645,65 @@ no cli.py inserir
  ...
  }
 
- ### Dentro do file user.py fora da classe inserir
+ ### Dentro do file user.py fora da classe User inserir a função 
+ ### Para normalisar o user-name
 
 def gen_user_name(name: str) -> str:
     """Generate a slug user-name from a name"""
     return slugify(name)
 
-In [1]: text = 'Jorge Palutz'
+In [1]: text = 'Jorge Plautz'
 In [2]: print(slugify(text))
-jorge-palutz
+jorge-plautz
 
-### Faser o commit Instalado a lib python-slugify e criado a função
+### atributo active na classe User é para mostrar o usuario esta ativo.
+### Quando deletar o user, não será deletado é sim o atributo ativo=True para False
 
+### No conatiner um comando para fazer uma query
+❯ docker compose exec api /bin/bash
+app@c2b33ba4290b:/home/api$ todo shell
+Auto imports: ['settings', 'engine', 'select', 'session', 'slugify', 'User']
+In [1]: name = 'Jorge Plautz'
+In [2]: from slugify import slugify
+In [3]: print(slugify(name))
+jorge-plautz
+
+In [4]: query = select(User).where(User.active == True)
+In [5]: print(query)
+SELECT "user".id, "user".name, "user".email, "user".password, "user".user_name, "user".active, "user".created_at, "user".updated_at 
+FROM "user" 
+WHERE "user".active = true
+
+In [6]: users = session.exec(query)
+
+In [7]: users
+Out[7]: <sqlalchemy.engine.result.ScalarResult at 0x7f820bd4ce10>
+
+In [8]: list(users)
+Out[8]: []
+
+app@c2b33ba4290b:/home/api$ todo user-list
+               Todo Users List                
+┏━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ name ┃ user_name ┃ created_at ┃ updated_at ┃
+┡━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+└──────┴───────────┴────────────┴────────────┘
+
+
+### o mesmo comando podemos fazer -> SELECT * FROM user WHERE active = true
+ 
 
 ### inserir um lib para implementat o hash o password e criar um função para normalizar o password
 poetry add passlib[bcrypt]
 
-### altera o file default.toml -> inserir
+❯ docker compose exec api /bin/bash
+app@b31ee44209b3:/home/api$ pip list | grep passlib
+passlib           1.7.4
+app@b31ee44209b3:/home/api$ pip list | grep bcrypt
+bcrypt            4.0.1
+
+
+### alterar o file default.toml -> inserir
 
 [default.security]
 # Set secret key_in .secrets.toml
@@ -1669,36 +1712,37 @@ ALGORITHM = "HS256"
 ACCES_TOKEN_EXPIRE_MINUTES = 20
 REFRESH_TOKEN_EXPIRE_MINUTES = 600
 
-### Criar arquivo na raiz .secrets.loml -> não deve subir para o githib
 
+### Criar arquivo na raiz .secrets.toml -> não deve subir para o github
 [development]
 dynaconf_merge = true
 
 [development.security]
-SECRET_KEY = "128782340856cdef18becc37febf9e80176c714c9166b5632bbcfd6141a96a4e"
+SECRET_KEY = "47d9cbc27d04c43fd30d2d66e827d9d412465a19ada8ec01242f33b6d9b11376"
 
 
 ### Para gerar a secret_key com command python
-
-python -c "print(__import__('secrets').token_hex(32))"
-128782340856cdef18becc37febf9e80176c714c9166b5632bbcfd6141a96a4e
+❯ python -c "print(__import__('secrets').token_hex(32))"              
+47d9cbc27d04c43fd30d2d66e827d9d412465a19ada8ec01242f33b6d9b11376
 
 ❯ openssl rand -hex 32                     
 d7b57f4f10ce3d475363dc8698fc3e81eba20e2cee77d323fe1963183dde4664
 
+app@b31ee44209b3:/home/api$ export TODO_SECRET_HEY=47d9cbc27d04c43fd30d2d66e827d9d412465a19ada8ec01242f33b6d9b11376
 
-### inserir no config
-
+### inserir no config.py
 Validator
 
 setting.validators.register:
-    Validator('security.SECRET_KEY', must_exit=True, is_type_of=str)  -> faltou completar
+  Validator('security.SECRET_KEY', must_exit=True, is_type_of=str)  
 
 
-  export TODO_SECRET_KEY=<security-key>
-  printenv | grep TODO
+export TODO_SECRET_KEY=<security-key>
+printenv | grep TODO
 
-  app@1e98e483d548:/home/api$ printenv | grep TODO
+❯ docker compose exec api /bin/bash
+                                              
+app@fb9e47fdc11f:/home/api$ printenv | grep TODO
 TODO_DB__connect_args={}
 TODO_DB__uri=postgresql://postgres:postgres@db:5432/todo
 
@@ -1711,18 +1755,21 @@ TODO_DB__uri=postgresql://postgres:postgres@db:5432/todo
 """Security utilities"""
 
 from passlib.context import CryptContext
-pwd_context = CryptContext(schemes=['bycrpt'].deprecated='auto')
 
-def verify.password(plain_password: str, hashed_password: str) -> bool:
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies a hash against a plain_password."""
     return pwd_context.verify(plain_password, hashed_password)
+
 
 def get_password_hash(password: str) -> str:
     """Generae a hash from plain text
 
     Args:
         password(str): Plain Text Password
-    
+
     Returns:
        str: Hased Passwod
     """
@@ -1730,35 +1777,91 @@ def get_password_hash(password: str) -> str:
 
 
 class HashedPassword(str):
-      """ Takes a plain text password and hashes it.
+    """Takes a plain text password and hashes it.
+    We can use it a field on our SQLModel
+    class User(SQLModel, table=True):
+        user_name= str
+        password = HashedPassword
+    """
 
-      We can use it a field on our SQLModel
-      class User(SQLModel, table=True):
-            user_name= str
-            password = HashedPassword
-      """
+    @classmethod
+    def __get_validators_(cls):
+        yield cls.validate
 
-      @classmethod
-      def __get_validators_(cls):
-          yield cls.validate
+    @classmethod
+    def validate(cls, v):
+        """Accepts a plain password and returns a hashed password."""
+        if not isinstance(v, str):
+            raise TypeError('string required')
 
-      @classmethod
-      def validate(cls, y):
-          """ Accepts ...."""
-          if not isinstance(v, str)
-              raise TypeError('string required')
-          
-          hashed_password = get_password_hash(v)
-          return cls(hashed_password)
+        hashed_password = get_password_hash(v)
+        return cls(hashed_password)
 
 
 ### No file user.py
-
-from Todo.security import HashedPassword
+from todo.security import HashedPassword
 password = HashedPassword
 
 
-No container 
+No container criar o user
 
-user = User(name='plautz', email='plautz@email.com', password='1234',)
 
+In [1]: user = User(name='Jorge Plautz', email='plautz@email.com', password='1234',user_name='plautz')
+
+In [2]: user
+Out[2]: User(id=None, name='Jorge Plautz', email='plautz@email.com', password='$2b$12$HrAxMEeMGLoWbiIqxtk3au4nANGwoXizQ22idzacwmgSksIp7e8XW', user_name='plautz', active=True, created_at=datetime.datetime(2023, 8, 14, 21, 49, 53, 788262), updated_at=datetime.datetime(2023, 8, 14, 21, 49, 53, 788268))
+
+In [3]: from todo.security import verify_password
+
+In [1]: user = User(name='Jorge Plautz', email='plautz@email.com', password='1234',user_name='plautz')
+
+In [2]: user
+Out[2]: User(id=None, name='Jorge Plautz', email='plautz@email.com', password='$2b$12$HrAxMEeMGLoWbiIqxtk3au4nANGwoXizQ22idzacwmgSksIp7e8XW', user_name='plautz', active=True, created_at=datetime.datetime(2023, 8, 14, 21, 49, 53, 788262), updated_at=datetime.datetime(2023, 8, 14, 21, 49, 53, 788268))
+
+In [3]: from todo.security import verify_password
+
+In [5]: user.password
+Out[5]: '$2b$12$HrAxMEeMGLoWbiIqxtk3au4nANGwoXizQ22idzacwmgSksIp7e8XW'
+
+In [7]: verify_password('plautz', user.password)
+Out[7]: False
+
+In [8]: verify_password('1234', user.password)
+Out[8]: True
+
+
+### Tipos primitivos do Python
+>>> type('')
+<class 'str'>
+>>> type(1)
+<class 'int'>
+>>> type(1.0)
+<class 'float'>
+>>> 'jorge'.upper()
+'JORGE'
+>>> ''.__dir__() -> o que podemos user são os metodos sem o dunder
+['__new__', '__repr__', '__hash__', '__str__', '__getattribute__', '__lt__', '__le__', '__eq__', '__ne__', '__gt__', '__ge__', '__iter__', '__mod__', '__rmod__', '__len__', '__getitem__', '__add__', '__mul__', '__rmul__', '__contains__', 'encode', 'replace', 'split', 'rsplit', 'join', 'capitalize', 'casefold', 'title', 'center', 'count', 'expandtabs', 'find', 'partition', 'index', 'ljust', 'lower', 'lstrip', 'rfind', 'rindex', 'rjust', 'rstrip', 'rpartition', 'splitlines', 'strip', 'swapcase', 'translate', 'upper', 'startswith', 'endswith', 'removeprefix', 'removesuffix', 'isascii', 'islower', 'isupper', 'istitle', 'isspace', 'isdecimal', 'isdigit', 'isnumeric', 'isalpha', 'isalnum', 'isidentifier', 'isprintable', 'zfill', 'format', 'format_map', '__format__', 'maketrans', '__sizeof__', '__getnewargs__', '__doc__', '__setattr__', '__delattr__', '__init__', '__reduce_ex__', '__reduce__', '__getstate__', '__subclasshook__', '__init_subclass__', '__dir__', '__class__']
+
+>>> 'a'. __lt__ ('b')
+True
+>>> 'a' < 'b'
+True
+>>> mydict = {}
+>>> type(mydict)
+<class 'dict'>
+
+### salvar user no banco
+app@8c71e385edd2:/home/api$ todo shell
+Auto imports: ['settings', 'engine', 'select', 'session', 'gen_user_name', 'User']
+
+In [1]: user = User(name='Jorge Plautz', email='plautz@email.com', password='1234',user_name='plautz')
+
+In [2]: user
+Out[2]: User(id=None, name='Jorge Plautz', email='plautz@email.com', password='$2b$12$pYXHdgj.nNCaqSkRonMsAeZPCvvcVqdpO.REUNCx6na9a2r3WeLYG', user_name='plautz', active=True, created_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191367), updated_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191372))
+
+In [3]: session.add(user)
+
+In [4]: session.commit()
+In [6]: user.id
+Out[6]: 1
+In [9]: session.refresh(user)

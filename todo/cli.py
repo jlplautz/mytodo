@@ -1,3 +1,5 @@
+from typing import Optional
+
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -47,7 +49,7 @@ def hello():
 def user_list():
     """List all users"""
     table = Table(title='Todo Users List')
-    fields = ['name', 'user_name', 'created_at', 'updated_at']
+    fields = ['name', 'user_name']
     for header in fields:
         table.add_column(header, style='cyan')
 
@@ -59,3 +61,23 @@ def user_list():
             )  # *[] para desempacotar uma lista
 
     Console().print(table)
+
+
+@main.command()
+def create_user(
+    name: str, email: str, password: str, user_name: Optional[str] = None
+):
+    """Create a new uer."""
+
+    with Session(engine) as session:
+        user = User(
+            name=name,
+            email=email,
+            password=password,
+            user_name=user_name or gen_user_name(name),
+        )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    typer.echo(f'created {user.user_name} user.')
+    return user

@@ -1660,7 +1660,8 @@ jorge-plautz
 ### Quando deletar o user, não será deletado é sim o atributo ativo=True para False
 
 ### No conatiner um comando para fazer uma query
-❯ docker compose exec api /bin/bash
+❯ 
+
 app@c2b33ba4290b:/home/api$ todo shell
 Auto imports: ['settings', 'engine', 'select', 'session', 'slugify', 'User']
 In [1]: name = 'Jorge Plautz'
@@ -1865,3 +1866,166 @@ In [4]: session.commit()
 In [6]: user.id
 Out[6]: 1
 In [9]: session.refresh(user)
+
+
+ ## ***************************************************************************
+ 
+ Comunidade  16/08/23
+
+ ### Criar comando create_user
+
+@main.command()
+def create_user(
+    name: str,
+    email: str,
+    password: str,
+    user_name: Optional[str] = None
+):
+    """ Create a new uer."""
+
+    with Session(engine) as session:
+        user = User(
+            email=email,
+            password=password,
+            user_name=user_name or gen_user_name(name)
+        )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    typer.echo(f'created {user.user_name} user.')
+    return user
+
+### para criar user no container
+❯ docker compose exec api /bin/bash
+app@798f762f0a69:/home/api$ todo create-user 'jorge' 'jlp@gmail.com' teste123
+created jorge user.
+
+app@798f762f0a69:/home/api$ todo create-user 'Gabriela Plautz' 'gabi@gmail.com' teste123
+created gabriela-plautz user.
+
+### List todo user-list para verificar
+
+app@798f762f0a69:/home/api$ todo user-list
+           Todo Users List            
+┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ name            ┃ user_name        ┃
+┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ Jorge Plautz    │ plautz           │
+│                 │ jorge            │
+│                 │ lindalene-plautz │
+│                 │ rafaela-plautz   │
+│ Gabriela Plautz │ gabriela-plautz  │
+└─────────────────┴──────────────────┘
+
+### todo shell to check all users
+
+In [2]: query = select(User).where(User.user_name=='gabriela-plautz')
+
+In [3]: print(query)
+SELECT "user".id, "user".name, "user".email, "user".password, "user".user_name, "user".active, "user".created_at, "user".updated_at 
+FROM "user" 
+WHERE "user".user_name = :user_name_1
+
+In [4]: user = session.exec(query).first()
+
+In [5]: user
+Out[5]: User(email='gabi@gmail.com', user_name='gabriela-plautz', created_at=datetime.datetime(2023, 8, 18, 21, 54, 8, 156661), password='$2b$12$YzqiLP5LkuVd9tdspxpe5.pJh7Ju2wSmZ2Y2qBb9wMYkps4PAk2gK', id=7, name='Gabriela Plautz', active=True, updated_at=datetime.datetime(2023, 8, 18, 21, 54, 8, 156665))
+
+
+ ### Serialização inserir no model
+ import pydantic ...
+
+ class UserResponse(BaseModel):
+      """ Serializer for Get all User Response."""
+      name: str
+      user_name: str
+
+class UserDetailRespose(UserResponse):
+      """Serializer for Detail Response."""
+      active: bool
+      created_at: datetime
+      updated_at: datetime
+
+class UserRequest(BaseModel):
+    name: str,
+    email: str,
+    password: Optional[str] = None
+    
+    @root_validator(pre=True)
+    def generate_user_name_if_not_set(cls, values):
+        """Generate username if not send."""
+        if not values.get('user_name'):
+            values['user_name'] = gen_user_name(values['name'])
+        return values
+### inserir no __init__.py models ....
+
+UserDeatilResponse, UserTRequest, ....
+
+### Injeção de dependencia
+
+Inserir no file db.py
+
+from fastapi import Depends
+
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+ActiveSession = Depends(get_session)
+
+
+### Criar as views e rotas 
+Dentro do diretorio routes criar
+
+from fastapi import APRouter
+from fastapi exception inport HTTPException
+from sqlmodel inport Session, select
+
+from todo.db import ActiveSession
+from todo.models import User, UserDetailResponse, UserRequest, UserResponse
+
+router = APIRuter()
+
+
+@route.get('/', response_model-list[UserResponse])
+async def list_users(*, session: Session = ActiveSession):
+    """List all users."""
+    users = session.exec(select(User)).all()
+    return users
+
+
+@route.get('/(user_name)', response_model=UserDetailResponse)
+async def get_user_by_user_name(*,user_name: str, session:Session = ctiveSession):
+    """Get user bt user_name."""
+    query =select(User).where(user.user_name == user_name)
+    users = session.exec(query).first()
+    if nor user:
+        raise HTTPExecption(status_code=status.HTTP_404_NOT_FOUND, detail='User not found.')
+    return user
+
+
+@router.post('/', response_model=UserRespone, status_code=status.HTTP_201_CREATED)
+async def create_user(
+  *, user: UserRequest, session: Session = ActiveSession
+):
+    """Create new user"""
+    # TODO: Validar informaçoes recebidas com as constraints do banco
+    db_user = user,from_orm(user)  
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    return db_user
+
+### Abri o __init__.py do routes
+from fastapi import APIRouter
+ from .user import router as router_user
+
+ main_router = APORouter()
+main_router: include_router(router_user, prefix='/user', tags=['user'])
+
+### no app.py inserir
+
+from todo,routes import main_router
+
+app.include_route .... falta

@@ -1932,7 +1932,10 @@ In [5]: user
 Out[5]: User(email='gabi@gmail.com', user_name='gabriela-plautz', created_at=datetime.datetime(2023, 8, 18, 21, 54, 8, 156661), password='$2b$12$YzqiLP5LkuVd9tdspxpe5.pJh7Ju2wSmZ2Y2qBb9wMYkps4PAk2gK', id=7, name='Gabriela Plautz', active=True, updated_at=datetime.datetime(2023, 8, 18, 21, 54, 8, 156665))
 
 
- ### Serialização inserir no model
+### Serialização inserir no model
+
+Como este api é pequena vamos criar a serialização dentro do file user.py no models
+
  import pydantic ...
 
  class UserResponse(BaseModel):
@@ -1960,6 +1963,28 @@ class UserRequest(BaseModel):
 ### inserir no __init__.py models ....
 
 UserDeatilResponse, UserTRequest, ....
+
+
+### Como criar User
+❯ docker compose exec api /bin/bash
+app@83656b244372:/home/api$ todo shell
+Auto imports: ['settings', 'engine', 'select', 'session', 'gen_user_name', 'User']
+In [1]: from todo.models.user import UserResponse, UserDetailResponse, UserRequest
+In [2]: new_user = UserRequest(name='Teste Simples', email='teste#email.com', password='teste1234')
+
+In [3]: new_user
+Out[3]: UserRequest(name='Teste Simples', email='teste#email.com', password='teste1234', user_name='teste-simples')
+
+In [4]: db_user = User.from_orm(new_user)
+
+In [5]: db_user
+Out[5]: User(id=None, active=True, created_at=datetime.datetime(2023, 8, 21, 18, 55, 18, 666042), updated_at=datetime.datetime(2023, 8, 21, 18, 55, 18, 666047), name='Teste Simples', email='teste#email.com', password='$2b$12$gs6IyYJCMefg1sbHfUR.kutPto4DHTcHK.6qd4.w5tol46Yuf/t9m', user_name='teste-simples')
+
+In [6]: UserResponse.parse_obj(db_user).json()
+Out[6]: '{"name": "Teste Simples", "user_name": "teste-simples"}'
+
+In [7]: UserDetailResponse.parse_obj(db_user).json()
+Out[7]: '{"name": "Teste Simples", "user_name": "teste-simples", "active": true, "created_at": "2023-08-21T18:55:18.666042", "updated_at": "2023-08-21T18:55:18.666047"}'
 
 ### Injeção de dependencia
 

@@ -1986,12 +1986,23 @@ Out[6]: '{"name": "Teste Simples", "user_name": "teste-simples"}'
 In [7]: UserDetailResponse.parse_obj(db_user).json()
 Out[7]: '{"name": "Teste Simples", "user_name": "teste-simples", "active": true, "created_at": "2023-08-21T18:55:18.666042", "updated_at": "2023-08-21T18:55:18.666047"}'
 
-### Injeção de dependencia
 
+In [2]: users = session.exec(select(User)).all()
+
+In [3]: for u in users:
+   ...:     print(u.name)
+   ...: 
+Jorge Plautz
+None
+None
+None
+Gabriela Plautz
+
+### Injeção de dependencia
+### com gerador de context -> função geradora que cria a session e devolve
 Inserir no file db.py
 
 from fastapi import Depends
-
 
 def get_session():
     with Session(engine) as session:

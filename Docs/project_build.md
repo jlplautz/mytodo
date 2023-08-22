@@ -2025,6 +2025,8 @@ router = APIRuter()
 
 
 @route.get('/', response_model-list[UserResponse])
+# *, da função significa que aceita somente argumentos nomeados 
+# não aceita argumentos posicionais
 async def list_users(*, session: Session = ActiveSession):
     """List all users."""
     users = session.exec(select(User)).all()
@@ -2055,9 +2057,9 @@ async def create_user(
 
 ### Abri o __init__.py do routes
 from fastapi import APIRouter
- from .user import router as router_user
+from .user import router as router_user
 
- main_router = APORouter()
+main_router = APORouter()
 main_router: include_router(router_user, prefix='/user', tags=['user'])
 
 ### no app.py inserir
@@ -2065,3 +2067,11 @@ main_router: include_router(router_user, prefix='/user', tags=['user'])
 from todo,routes import main_router
 
 app.include_route .... falta
+
+
+### Caso tenha feito o git add das alterações na branch main, para reverter
+
+git status  -> para verific ar os arquivos que foram colocados no stagge (verde)
+git restore --staged <arquivo.py> <arquivo1.py>  -> para remover do stagge
+git status -> os arquivos devem aparecer na cor vermelha (file untracked)
+-> depois executar stasj all changes (inserir nome que será solicitado)

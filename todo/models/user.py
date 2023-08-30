@@ -3,8 +3,9 @@ from typing import Optional
 
 from pydantic import BaseModel, root_validator
 from slugify import slugify
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Session, SQLModel, select
 
+from todo.db import engine
 from todo.security import HashedPassword
 
 
@@ -27,6 +28,7 @@ class User(SQLModel, table=True):
 
 def gen_user_name(name: str) -> str:
     """Generates a slug user-name from a name"""
+
     return slugify(name)
 
 
@@ -57,3 +59,22 @@ class UserRequest(BaseModel):
         if not values.get('user_name'):
             values['user_name'] = gen_user_name(values['name'])
         return values
+
+
+def get_user(user_name: str = None) -> User | list[User] | None:
+    """Função pode retornar um User ou uma lista de Users ou nada"""
+    query = (
+        # Qdo tiver User a query busca por user_name, caso contrário traz User
+        select(User).where(User.user_name == user_name)
+        if user_name
+        else select(User)
+    )
+    # with -> gerenciador de contexto
+    with Session(engine) as session:
+        users = (
+            # Qdo tiver User query busca por user_name, caso contrário todos
+            session.exec(query).first()
+            if user_name
+            else session.exec(query).all()
+        )
+    return users

@@ -6,6 +6,7 @@ from .user import (
     UserRequest,
     UserResponse,
     gen_user_name,
+    get_user,
 )
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     'UserRequest',
     'UserResponse',
     'gen_user_name',
+    'get_user',
 ]

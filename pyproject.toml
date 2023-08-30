@@ -46,11 +46,9 @@ testpaths = [
     "/tests",
 ]
 
-
 [tool.isort]
 profile = "black"  # <-- para alinhar os parametros do import 
-line_length = 79
-
+line_length = 79   # <-- Projeto do River esta com flake8 com 120 caracteres 
 
 [tool.taskipy.tasks]
 test = {cmd = "pytest -x", help = "Run test and abort if has one fail."}

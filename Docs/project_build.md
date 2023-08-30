@@ -1009,9 +1009,7 @@ TOTAL                  5      0   100%
 
 # *****************************************************************************
 
-## comandos no container 
-
-╰─$ docker compose exec api poetry show --tree
+## comandos no container
 The virtual environment found in /home/api/.venv seems to be broken.
 Recreating virtualenv mytodo in /home/api/.venv                     <- CRIOU O AMBIENTE VIRTUAL  
 blue 0.9.1 Blue -- Some folks like black but I prefer blue.
@@ -2075,3 +2073,168 @@ git status  -> para verific ar os arquivos que foram colocados no stagge (verde)
 git restore --staged <arquivo.py> <arquivo1.py>  -> para remover do stagge
 git status -> os arquivos devem aparecer na cor vermelha (file untracked)
 -> depois executar stasj all changes (inserir nome que será solicitado)
+
+
+ ## ***************************************************************************
+ 
+ Comunidade  23/08/23
+
+ - Verificar setting flake8
+ - verificar 
+
+
+ flake8 instalar a lib
+ poetry add --group dev flake8-pyproject
+
+ no file pyproject.toml abaixo do task
+
+ [tool.flake8]
+ max-line-length = 120
+
+ ## fazer commit
+
+
+ Alterar o serialize
+
+ função UserDetail retirar o nome e user_name
+
+
+ ### Melhorar a rota do User
+ Models/user.py  - fat mode (tudo relacionado a modelo deixar dentro do models, não dentro da class User)
+
+Criar uma função (get_user)
+from sqlmodel import Sesion, select
+from tod.db import engine
+
+def get_user(user_name: str = None) -> User | list[User] | None:
+    """Função pode retornar um User ou uma lista de Users
+        Usando a instrução "if ternário"
+    """
+    query = select(User).where(User.user_name == user_name) if user_name else select(User)
+    # with -> gerenciador de contexto
+    with Session(engine) as session:
+      users =session.exec(select(User).first() if user_name else session.exec(query).all()
+    return
+
+### Comandos docker
+❯ docker compose exec api todo shell 
+Auto imports: ['settings', 'engine', 'select', 'session', 'gen_user_name', 'User']
+
+In [1]: query = select(User)
+
+In [2]: print(query)
+SELECT "user".id, "user".name, "user".email, "user".password, "user".user_name, "user".active, "user".created_at, "user".updated_at 
+FROM "user"
+
+In [3]: users = session.exec(query).all()
+
+In [4]: users
+Out[4]: 
+[User(email='plautz@email.com', user_name='plautz', created_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191367), name='Jorge Plautz', password='$2b$12$pYXHdgj.nNCaqSkRonMsAeZPCvvcVqdpO.REUNCx6na9a2r3WeLYG', id=1, active=True, updated_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191372)),
+ User(email='gabi@gmail.com', user_name='gabriela-plautz', created_at=datetime.datetime(2023, 8, 18, 21, 54, 8, 156661), name='Gabriela Plautz', password='$2b$12$YzqiLP5LkuVd9tdspxpe5.pJh7Ju2wSmZ2Y2qBb9wMYkps4PAk2gK', id=7, active=True, updated_at=datetime.datetime(2023, 8, 18, 21, 54, 8, 156665)),
+ User(email='jlp@gmail.com', user_name='jorge', created_at=datetime.datetime(2023, 8, 18, 20, 30, 55, 509438), name='Jorge', password='$2b$12$pn2iDR1LXwHSYpDKT/pXKergA24uPbLs5WIWIbCdDoy1KORZqhqe.', id=2, active=True, updated_at=datetime.datetime(2023, 8, 18, 20, 30, 55, 509444)),
+ User(email='llp@gmail.com', user_name='lindalene-plautz', created_at=datetime.datetime(2023, 8, 18, 21, 20, 7, 308983), name='Lindalene Plautz', password='$2b$12$XwUjDItPCb5PijZpClx1Q.2CbzteBPzVFWWouHT/QOF85YS/vtudu', id=3, active=True, updated_at=datetime.datetime(2023, 8, 18, 21, 20, 7, 308989)),
+ User(email='rafa@gmail.com', user_name='rafaela-plautz', created_at=datetime.datetime(2023, 8, 18, 21, 49, 28, 268458), name='Rafaela Plautz', password='$2b$12$DcwwQFGvSFV.EfTjAsyUG.pXW034WFcTsB6IMo/D61gNGbVclPSLS', id=4, active=True, updated_at=datetime.datetime(2023, 8, 18, 21, 49, 28, 268463)),
+ User(email='test@email.com', user_name='teste-teste', created_at=datetime.datetime(2023, 8, 22, 11, 44, 8, 78616), name='Teste Teste', password='$2b$12$nl0QfJrztVt4GhnOtVDJ/uf4pSW.Pn.zUd9cW5uvp8CcpG773pF0e', id=9, active=True, updated_at=datetime.datetime(2023, 8, 22, 11, 44, 8, 78622))]
+
+In [5]: query = select(User).where(User.user_name == 'plautz')
+
+In [6]: print(query)
+SELECT "user".id, "user".name, "user".email, "user".password, "user".user_name, "user".active, "user".created_at, "user".updated_at 
+FROM "user" 
+WHERE "user".user_name = :user_name_1
+### parametro .first() -> para consumir o object scalar result 
+### que retorna da query
+In [7]: user = session.exec(query).first()
+
+In [8]: user
+Out[8]: User(email='plautz@email.com', user_name='plautz', created_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191367), name='Jorge Plautz', password='$2b$12$pYXHdgj.nNCaqSkRonMsAeZPCvvcVqdpO.REUNCx6na9a2r3WeLYG', id=1, active=True, updated_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191372))
+
+
+❯ docker compose exec api todo shell
+Auto imports: ['settings', 'engine', 'select', 'session', 'gen_user_name', 'User']
+
+In [1]: from todo.models.user import get_user
+
+In [2]: users = get_user()
+
+In [3]: users
+Out[3]: 
+[User(email='plautz@email.com', user_name='plautz', created_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191367), name='Jorge Plautz', password='$2b$12$pYXHdgj.nNCaqSkRonMsAeZPCvvcVqdpO.REUNCx6na9a2r3WeLYG', id=1, active=True, updated_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191372)),
+ User(email='gabi@gmail.com', user_name='gabriela-plautz', created_at=datetime.datetime(2023, 8, 18, 21, 54, 8, 156661), name='Gabriela Plautz', password='$2b$12$YzqiLP5LkuVd9tdspxpe5.pJh7Ju2wSmZ2Y2qBb9wMYkps4PAk2gK', id=7, active=True, updated_at=datetime.datetime(2023, 8, 18, 21, 54, 8, 156665)),
+ User(email='jlp@gmail.com', user_name='jorge', created_at=datetime.datetime(2023, 8, 18, 20, 30, 55, 509438), name='Jorge', password='$2b$12$pn2iDR1LXwHSYpDKT/pXKergA24uPbLs5WIWIbCdDoy1KORZqhqe.', id=2, active=True, updated_at=datetime.datetime(2023, 8, 18, 20, 30, 55, 509444)),
+ User(email='llp@gmail.com', user_name='lindalene-plautz', created_at=datetime.datetime(2023, 8, 18, 21, 20, 7, 308983), name='Lindalene Plautz', password='$2b$12$XwUjDItPCb5PijZpClx1Q.2CbzteBPzVFWWouHT/QOF85YS/vtudu', id=3, active=True, updated_at=datetime.datetime(2023, 8, 18, 21, 20, 7, 308989)),
+ User(email='rafa@gmail.com', user_name='rafaela-plautz', created_at=datetime.datetime(2023, 8, 18, 21, 49, 28, 268458), name='Rafaela Plautz', password='$2b$12$DcwwQFGvSFV.EfTjAsyUG.pXW034WFcTsB6IMo/D61gNGbVclPSLS', id=4, active=True, updated_at=datetime.datetime(2023, 8, 18, 21, 49, 28, 268463)),
+ User(email='test@email.com', user_name='teste-teste', created_at=datetime.datetime(2023, 8, 22, 11, 44, 8, 78616), name='Teste Teste', password='$2b$12$nl0QfJrztVt4GhnOtVDJ/uf4pSW.Pn.zUd9cW5uvp8CcpG773pF0e', id=9, active=True, updated_at=datetime.datetime(2023, 8, 22, 11, 44, 8, 78622))]
+
+In [6]: user = get_user(user_name='teste-teste')
+
+In [7]: user
+Out[7]: User(email='test@email.com', user_name='teste-teste', created_at=datetime.datetime(2023, 8, 22, 11, 44, 8, 78616), name='Teste Teste', password='$2b$12$nl0QfJrztVt4GhnOtVDJ/uf4pSW.Pn.zUd9cW5uvp8CcpG773pF0e', id=9, active=True, updated_at=datetime.datetime(2023, 8, 22, 11, 44, 8, 78622))
+
+
+❯ docker compose exec api todo shell
+Auto imports: ['settings', 'engine', 'select', 'session', 'gen_user_name', 'User']
+
+In [1]: user_name = 'jorge-luiz-plautz'
+
+In [2]: query = select(User).where(User.user_name == user_name)
+
+In [3]: print(query)
+SELECT "user".id, "user".name, "user".email, "user".password, "user".user_name, "user".active, "user".created_at, "user".updated_at 
+FROM "user" 
+WHERE "user".user_name = :user_name_1
+### Comando de SELECT similar via SQL
+In [4]: SELECT * FROM "user" WHERE "user".user_name = 'jorge-luiz-plautz'
+### a outra query do comando caso não tenha user_name
+In [4]: query = select(User)
+
+In [5]: print(query)
+SELECT "user".id, "user".name, "user".email, "user".password, "user".user_name, "user".active, "user".created_at, "user".updated_at 
+FROM "user"
+
+### Verificar obejct ScalarResult
+❯ docker compose exec api todo shell
+Auto imports: ['settings', 'engine', 'select', 'session', 'gen_user_name', 'User']
+
+In [1]: user_name='plautz'
+
+In [2]: query = select(User).where(User.user_name == user_name)
+
+In [3]: user = session.exec(query)
+
+In [4]: user
+Out[4]: <sqlalchemy.engine.result.ScalarResult at 0x7f69ae84cbd0>
+
+In [5]: u = list(user)
+
+In [6]: u
+Out[6]: [User(email='plautz@email.com', user_name='plautz', created_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191367), name='Jorge Plautz', password='$2b$12$pYXHdgj.nNCaqSkRonMsAeZPCvvcVqdpO.REUNCx6na9a2r3WeLYG', id=1, active=True, updated_at=datetime.datetime(2023, 8, 14, 21, 59, 57, 191372))]
+
+### para visualizar os logs do container API
+docker compose logs api
+
+## video sobre contexto -> https://www.youtube.com/watch?v=IM0o8dFE0WU
+
+### Abri o __init__.py do models
+inserir o get_user
+
+from .user import (User,UserDetailResponse,UserRequest,UserResponse,gen_user_name,
+    get_user,
+)
+__all__ = ['SQLModel','User','UserDetailResponse','UserRequest',
+    'UserResponse','gen_user_name','get_user',
+]
+
+### Alterar as demaos rotas com a função get_user
+
+@router.get('/', response_model=list[UserResponse])
+async def list_users(*, session: Session = ActiveSession):
+    """List all users."""
+    users = get_user()
+    return users
+
+    user = get_user(user_name=user_name)
+
+    
+### JWT -> jwt.io

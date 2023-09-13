@@ -1,0 +1,10 @@
+site_name: MYTODO
+repo_url: https://github.com/jlplautz/mytodo
+repo_name: jlplautz/mytodo
+edit_uri: tree/main/docs
+
+theme:
+  name: material
+  language: pt-BR
+  logo: assets/logo.png
+  favicon: assets/logo.png

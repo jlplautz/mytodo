@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.table import Table
 from sqlmodel import Session, select
 
+from todo.auth import authenticate_user
 from todo.config import settings
 from todo.db import engine
 from todo.models import User, gen_user_name
@@ -23,6 +24,8 @@ def shell():
         'select': select,
         'session': Session(engine),
         'gen_user_name': gen_user_name,
+        'User': User,
+        'authenticate_user': authenticate_user,
         'User': User,
     }
 
@@ -68,7 +71,6 @@ def create_user(
     name: str, email: str, password: str, user_name: Optional[str] = None
 ):
     """Create a new uer."""
-
     with Session(engine) as session:
         user = User(
             name=name,

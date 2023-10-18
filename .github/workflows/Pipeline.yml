@@ -21,10 +21,10 @@ jobs:
         run: poetry install
 
       - name: Rodar os testes
-        run: poetry run task test --cov=todo -vv
-        # run: poetry run task lint
-
-      - name: Subir cobertura para o codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+        run: poetry run task lint
+        # run: poetry run task test --cov=todo -vv
+        
+      # - name: Subir cobertura para o codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}

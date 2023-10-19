@@ -1628,3 +1628,10 @@ async def refresh_token(form_data: RefreshToken):
   Editar o __init__.py -> inserir as rotas
 
   instalar a lib python-multitask
+
+
+*************************************************
+
+https://paulovitorweb.github.io/posts/CI-com-Github-Actions-em-projeto-python-com-Django-e-PostgreSQL/poe
+
+banco assincrono Benue

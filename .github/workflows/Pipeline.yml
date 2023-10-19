@@ -6,19 +6,15 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DB_HOST: localhost
-      DB_NAME: postgres
-      DB_USER: postgres
-      DB_PASSWORD: postgres
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/todo_test
 
     services:
       postgres:
         image: postgres
         env:
-          POSTGRES_DB: ${{ env.DB_NAME }}
-          POSTGRES_USER: ${{ env.DB_USER }}
-          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
-        # Set health checks to wait until postgres has started
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
         options: >-
           --health-cmd pg_isready
           --health-interval 10s

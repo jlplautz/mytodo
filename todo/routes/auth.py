@@ -50,7 +50,7 @@ async def login_for_access_token(
 
 @router.post('/refresh_token', response_model=Token)
 async def refresh_token(form_data: RefreshToken):
-    user = await validate_token(token=form_data.refresh_token)
+    user = validate_token(token=form_data.refresh_token)
     if not user or not isinstance(user, User):
         raise HTTPException(
             status_code=status.HTTD_401_UNAUTHORIZED,

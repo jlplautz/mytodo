@@ -19,6 +19,7 @@ class User(SQLModel, table=True):
     user_name: str = Field(nullable=False, unique=True)
     active: Optional[bool] = Field(default=True)
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    super_user: Optional[bool] = Field(default=False)
     updated_at: datetime = Field(
         default_factory=datetime.utcnow,
         nullable=False,
@@ -43,6 +44,7 @@ class UserDetailResponse(UserResponse):
     """Serializer for Detail Response."""
 
     active: bool
+    super_user: bool
     created_at: datetime
     updated_at: datetime
 
@@ -52,6 +54,7 @@ class UserRequest(BaseModel):
     email: str
     password: str
     user_name: Optional[str] = None
+    super_user: Optional[bool] = False
 
     @root_validator(pre=True)
     def generate_user_name_if_not_set(cls, values):
@@ -65,9 +68,9 @@ def get_user(user_name: str = None) -> User | list[User] | None:
     """Função pode retornar um User ou uma lista de Users ou nada"""
     query = (
         # Qdo tiver User a query busca por user_name, caso contrário traz User
-        select(User).where(User.user_name == user_name)
+        select(User).where(User.user_name == user_name).where(User.active)
         if user_name
-        else select(User)
+        else select(User).where(User.active)
     )
     # with -> gerenciador de contexto
     with Session(engine) as session:

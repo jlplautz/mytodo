@@ -1628,3 +1628,40 @@ async def refresh_token(form_data: RefreshToken):
   Editar o __init__.py -> inserir as rotas
 
   instalar a lib python-multitask
+
+
+## Monitoria 25/10/2023
+
+Criar SuperUser
+
+Ajustar modulo User
+Para alterar user será necessário ter atributos administrador
+- super_user: Option[bool] = Field(default=False)
+
+class UserDetialResponse(...):
+  super_user: Optional[bool] = False
+
+class UserRequest(...):
+inserir a informação superuser
+
+  Rodar a migração
+  docker compose exec api alembic revision -- autogenerate
+  docker compose exec api alembic upgrade head
+
+Proteger as rotas
+ na função get_curretnt_active_user
+
+criar a função assync def get_current_super_user
+
+ver as rotas:
+- router.get( ... dependencies=[]
+
+## **************************************************************
+Correction -> todo/routes/auth.py", line 53, in refresh_token
+
+  File "/home/api/todo/routes/auth.py", line 53, in refresh_token
+    user = await validate_token(token=form_data.refresh_token)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: object User can't be used in 'await' expression
+
+## **************************************************************

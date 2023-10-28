@@ -1,5 +1,6 @@
 from fastapi import APIRouter, status
 from fastapi.exceptions import HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
 
 from todo.auth import AuthenticatedUser, SuperUser
@@ -51,6 +52,12 @@ async def create_user(*, user: UserRequest, session: Session = ActiveSession):
 
     db_user = User.from_orm(user)
     session.add(db_user)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail='Email or user-name already exist.',
+        )
     session.refresh(db_user)
     return db_user

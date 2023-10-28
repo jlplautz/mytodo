@@ -55,6 +55,9 @@ async def create_user(*, user: UserRequest, session: Session = ActiveSession):
     try:
         session.commit()
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Email or user-name already exist.')
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail='Email or user-name already exist.',
+        )
     session.refresh(db_user)
     return db_user

@@ -66,6 +66,7 @@ class UserRequest(BaseModel):
 
 def get_user(user_name: str = None) -> User | list[User] | None:
     """Função pode retornar um User ou uma lista de Users ou nada"""
+
     query = (
         # Qdo tiver User a query busca por user_name, caso contrário traz User
         select(User).where(User.user_name == user_name).where(User.active)

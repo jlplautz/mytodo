@@ -66,9 +66,16 @@ def user_list():
     Console().print(table)
 
 
+super_user: bool
+
+
 @main.command()
 def create_user(
-    name: str, email: str, password: str, user_name: Optional[str] = None
+    name: str,
+    email: str,
+    password: str,
+    super_user: bool,
+    user_name: Optional[str] = None,
 ):
     """Create a new uer."""
     with Session(engine) as session:
@@ -76,6 +83,7 @@ def create_user(
             name=name,
             email=email,
             password=password,
+            super_user=super_user,
             user_name=user_name or gen_user_name(name),
         )
     session.add(user)

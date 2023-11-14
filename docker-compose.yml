@@ -19,9 +19,10 @@ services:
   
   db:
     build: postgres
-    image: todo_postgres-15-alpine-multi-user
+    image: todo_postgres-16-alpine-multi-user
     volumes:
-      - .postgres/todo_db/data/postgresql:/var/lib/postgresql/data
+      - /opt/.pgdata:/var/lib/postgresql/data
+      # .postgres/todo_db/data/postgresql:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     environment:

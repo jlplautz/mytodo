@@ -1,6 +1,1 @@
-.venv/
-.postgres/
-.pytest_cache/
-.vscode/
-.git/
-.gitignore
+fly.toml

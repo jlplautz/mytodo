@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
@@ -61,3 +61,46 @@ async def create_user(*, user: UserRequest, session: Session = ActiveSession):
         )
     session.refresh(db_user)
     return db_user
+
+
+@router.delete(
+    '/{user_name}/',
+    response_model=UserDetailResponse,
+    dependencies=[AuthenticatedUser],
+)
+async def delete_user_by_user_name(
+    *, user_name: str, session: Session = ActiveSession
+):
+    """Get user by user_name."""
+    user = get_user(user_name=user_name)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail='User not found.'
+        )
+    session.delete(user)
+    session.commit()
+    return Response(status_code=200)
+
+
+# @router.put(
+#     '/{user_name}/',
+#     response_model=UserDetailResponse,
+#     dependencies=[AuthenticatedUser],
+# )
+# async def update_user(*, user: UserRequest, session: Session = ActiveSession):
+#     db_user = User.from_orm(user)
+#     session.add(db_user)
+
+#     user = get_user(user_name=user_name)
+#     if not user:
+#          status_code=status.HTTP_404_NOT_FOUND, detail='User not found.'
+
+#     user.user_name = user.user_name
+#     user.password = user.password
+#     user.email = user.email
+#     user.super_user = user.super_user
+
+#     session.commit()
+#     session.refresh(user)
+
+#     return user
